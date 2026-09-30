@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>false</UseWPF>
+    <UseWinUI>true</UseWinUI>
+    <WinUIVersion>1.6.250430001</WinUIVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace>ECHWorkers.WinUI3</RootNamespace>
+    <AssemblyName>ECHWorkers.WinUI3</AssemblyName>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <PublishWindowsAppPackage>false</PublishWindowsAppPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+  </ItemGroup>
+
+</Project>
