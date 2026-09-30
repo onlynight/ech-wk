@@ -11,7 +11,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="Transparent" Padding="16,0">
+        <Border Grid.Row="0" Background="Transparent" Padding="16,0,138,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Border Width="24" Height="24" CornerRadius="6" Background="{ThemeResource AccentFillColorDefaultBrush}" Margin="0,0,10,0">
                     <TextBlock Text="E" FontSize="12" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>

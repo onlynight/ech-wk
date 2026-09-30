@@ -11,6 +11,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ConfigureTitleBar();
         ConfigureBackdrop();
         ApplyCaptionColors();
 
@@ -18,12 +19,31 @@ public sealed partial class MainWindow : Window
         ((Grid)Content).ActualThemeChanged += OnActualThemeChanged;
     }
 
+    /// <summary>
+    /// 让标题栏区域与窗口内容合并：Mica 模糊延伸至标题栏，
+    /// 同时为右侧系统按钮预留空间，避免内容被遮罩。
+    /// </summary>
+    private void ConfigureTitleBar()
+    {
+        // 把标题栏区域指定为 XAML 顶部的第一行（含 logo 与标题文字的 Border）。
+        this.SetTitleBar(((Grid)Content).Children[0] as UIElement);
+
+        // 开启“内容延伸至标题栏”，Mica 背景才会延伸到标题栏区域。
+        this.ExtendsContentIntoTitleBar = true;
+        var appWindow = this.AppWindow;
+        if (appWindow != null)
+        {
+            var titleBar = appWindow.TitleBar;
+            titleBar.ExtendsContentIntoTitleBar = true;
+        }
+        this.Title = "ECH Workers";
+    }
+
     /// <summary>启用 Windows 11 Mica 背景，使模糊材质延伸至标题栏与整个窗口。</summary>
     private void ConfigureBackdrop()
     {
         try
         {
-            // Mica 仅在系统主题下生效，必须在窗口呈现后设置。
             this.SystemBackdrop = new MicaBackdrop();
         }
         catch
@@ -37,9 +57,8 @@ public sealed partial class MainWindow : Window
     /// <summary>把标题栏文字与按钮配色对齐当前主题，并保留 Mica 透出。</summary>
     private void ApplyCaptionColors()
     {
-        var appWindow = this.AppWindow;
-        if (appWindow == null) return;
-        var titleBar = appWindow.TitleBar;
+        var titleBar = this.AppWindow?.TitleBar;
+        if (titleBar == null) return;
 
         var isLight = Application.Current?.RequestedTheme == ApplicationTheme.Light;
 
