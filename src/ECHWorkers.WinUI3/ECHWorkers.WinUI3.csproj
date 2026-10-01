@@ -9,6 +9,7 @@
     <UseWinUI>true</UseWinUI>
     <WinUIVersion>1.6.250430001</WinUIVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app_icon.ico</ApplicationIcon>
     <RootNamespace>ECHWorkers.WinUI3</RootNamespace>
     <AssemblyName>ECHWorkers.WinUI3</AssemblyName>
     <WindowsPackageType>None</WindowsPackageType>
@@ -18,6 +19,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <PackageReference Include="YamlDotNet" Version="15.3.0" />
+  </ItemGroup>
+
+  <!-- Go 核心代理程序：由仓库根目录的 ech-workers.go 编译生成，
+       构建时复制到输出目录供 ProxyProcessService 查找。 -->
+  <ItemGroup Condition="Exists('..\..\ech-workers.exe')">
+    <Content Include="..\..\ech-workers.exe">
+      <Link>ech-workers.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

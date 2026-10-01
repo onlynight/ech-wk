@@ -8,23 +8,18 @@
     Title="ECH Workers">
     <Grid x:Name="RootGrid" Background="Transparent">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="264"/>
+            <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- 左侧固定侧边栏（永不收起） -->
-        <Grid Grid.Column="0" x:Name="SidebarHost" Margin="0,48,0,0">
+        <Grid Grid.Column="0" x:Name="SidebarHost">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="48"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
-            <!-- 品牌（与导航项左对齐） -->
-            <TextBlock Grid.Row="0" Text="ECH Workers" FontSize="14" FontWeight="SemiBold"
-                       Margin="20,16,0,20"
-                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
             <!-- 导航项 -->
             <controls:Button Grid.Row="1" x:Name="NavHome" Tag="home"
@@ -75,17 +70,18 @@
             </controls:Button>
         </Grid>
 
-        <!-- 右侧内容区 -->
+        <!-- 右侧内容区：内容铺满，标题栏拖拽条叠加在顶部 -->
         <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="48"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <!-- 标题栏拖拽区（仅此区域可拖动窗口） -->
-            <Border Grid.Row="0" x:Name="TitleBarStrip" Background="Transparent"/>
-
-            <Grid x:Name="PageHost" Grid.Row="1"/>
+            <Grid x:Name="PageHost"/>
+            <Border x:Name="TitleBarStrip" Height="48"
+                    VerticalAlignment="Top" Background="Transparent"/>
         </Grid>
+
+        <!-- 标题栏应用名称（覆盖在侧边栏顶部标题栏区域） -->
+        <Border Grid.Column="0" Margin="20,0,0,0" VerticalAlignment="Top" Height="48">
+            <TextBlock Text="ECH Workers" FontSize="14" FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+        </Border>
     </Grid>
 </root:Window>

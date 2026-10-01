@@ -1,0 +1,107 @@
+<UserControl
+    x:Class="ECHWorkers.WinUI3.Pages.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <Grid Padding="28,52,28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 节点基本信息 -->
+            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 服务器选择 -->
+                    <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="4" Margin="0,0,20,0">
+                        <TextBlock Text="服务器配置" FontSize="11"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <ComboBox x:Name="ServerCombo" Width="170" Padding="10,7" FontSize="13"
+                                  VerticalContentAlignment="Center"
+                                  SelectionChanged="ServerCombo_SelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- 节点信息 -->
+                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center" Margin="0,0,20,0">
+                        <TextBlock x:Name="NodeName" Text="domain:port" FontSize="19"
+                                   FontWeight="SemiBold" MaxWidth="260" TextTrimming="CharacterEllipsis"
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock x:Name="NodeDetail" Text="未选择服务器" FontSize="13"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,2,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#EF4444"/>
+                                <TextBlock x:Name="StatusText" Text="已停止" FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                            <TextBlock x:Name="ListenText" Text="127.0.0.1:30000" FontSize="12"
+                                       FontFamily="Consolas"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 分流 + 启动 -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10"
+                                VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Vertical" Spacing="4">
+                            <TextBlock Text="分流模式" FontSize="11"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ComboBox x:Name="RoutingCombo" Width="120" Padding="8,7" FontSize="13"
+                                      VerticalContentAlignment="Center" SelectedIndex="0">
+                                <ComboBoxItem Content="全局代理" Tag="global"/>
+                                <ComboBoxItem Content="跳过大陆" Tag="bypass_cn"/>
+                                <ComboBoxItem Content="不改变" Tag="none"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <Button x:Name="StartButton" Style="{StaticResource PrimaryActionButton}"
+                                Click="StartButton_Click" VerticalAlignment="Bottom"
+                                PointerEntered="PrimaryBtn_PointerEntered" PointerExited="PrimaryBtn_PointerExited">
+                            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                <FontIcon x:Name="StartGlyph" Glyph="&#xE768;" FontSize="13"
+                                          FontFamily="Segoe Fluent Icons"/>
+                                <TextBlock x:Name="StartText" Text="启动" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        <!-- 运行日志 -->
+        <Border Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource CardBorder}" Padding="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <TextBlock Text="运行日志" Style="{StaticResource CardHeaderTitle}"/>
+                    <TextBlock HorizontalAlignment="Right" Text="点击启动后实时写入" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </Grid>
+
+                <Border Grid.Row="1" CornerRadius="10" Padding="12"
+                        Background="{ThemeResource ControlFillColorTertiaryBrush}">
+                    <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled" Padding="0">
+                        <TextBlock x:Name="LogText" TextWrapping="Wrap"
+                                   FontSize="16"
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
