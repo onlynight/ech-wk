@@ -32,4 +32,16 @@
     </Content>
   </ItemGroup>
 
+  <!-- 确保 XAML 编译产物（.xbf / .pri）被复制到发布目录；
+       否则发布目录下的 exe 会因找不到 UI 资源而启动失败。
+       .xbf 在 IntermediateOutputPath (obj/...); .pri 由 XAML 编译器生成到 BuildOutputPath (bin/...)。
+       按子目录（Pages/、Themes/）展开，保持与 bin/Release 一致的结构。 -->
+  <Target Name="CopyXamlArtifactsToPublish" BeforeTargets="Publish">
+    <ItemGroup>
+      <XamlArtifact Include="$(IntermediateOutputPath)**\*.xbf" />
+      <XamlArtifact Include="$(OutputPath)\$(AssemblyName).pri" Condition="Exists('$(OutputPath)\$(AssemblyName).pri')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(XamlArtifact)" DestinationFiles="@(XamlArtifact->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
