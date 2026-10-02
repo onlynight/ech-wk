@@ -13,6 +13,7 @@ public sealed partial class MainWindow : Window
 {
     private HomePage? _homePage;
     private ServersPage? _serversPage;
+    private SettingsPage? _settingsPage;
     private AboutPage? _aboutPage;
     private readonly Button[] _navButtons;
 
@@ -31,7 +32,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        _navButtons = new[] { NavHome, NavServers, NavAbout };
+        _navButtons = new[] { NavHome, NavServers, NavSettings, NavAbout };
 
         ConfigureTitleBar();
         ConfigureBackdrop();
@@ -205,6 +206,18 @@ public sealed partial class MainWindow : Window
         ShowPage(key);
     }
 
+    /// <summary>切换到首页（供系统托盘"启动/暂停代理"菜单调用）。</summary>
+    public void ShowHomePage()
+    {
+        ShowPage("home");
+    }
+
+    /// <summary>切换代理启停（供系统托盘菜单调用）。</summary>
+    public void ToggleProxyFromTray()
+    {
+        _homePage?.ToggleProxy();
+    }
+
     private void NavItem_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
         if (sender is Button button) RefreshOne(button);
@@ -225,6 +238,7 @@ public sealed partial class MainWindow : Window
         UIElement page = key switch
         {
             "servers" => _serversPage ??= new ServersPage(),
+            "settings" => _settingsPage ??= new SettingsPage(),
             "about" => _aboutPage ??= new AboutPage(),
             _ => _homePage ??= new HomePage(),
         };

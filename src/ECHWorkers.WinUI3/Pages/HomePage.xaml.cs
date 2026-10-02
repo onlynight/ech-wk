@@ -11,6 +11,7 @@ namespace ECHWorkers.WinUI3.Pages;
 public partial class HomePage : UserControl
 {
     private bool _running;
+    private bool _intentionalStop;
     private ServerProfile? _selectedServer;
     private readonly ProxyProcessService _proxyService = new();
 
@@ -91,6 +92,19 @@ public partial class HomePage : UserControl
         }
     }
 
+    /// <summary>切换代理启停（供系统托盘菜单调用，与 StartButton_Click 同逻辑）。</summary>
+    public void ToggleProxy()
+    {
+        if (!_running)
+        {
+            _ = StartProxy();
+        }
+        else
+        {
+            StopProxy();
+        }
+    }
+
     private async Task StartProxy()
     {
         if (_selectedServer == null)
@@ -134,6 +148,7 @@ public partial class HomePage : UserControl
 
             _running = true;
             UpdateRunningUI(port);
+            App.Tray?.SetStatus(isRunning: true, proxyText: $"端口 {port}");
         }
         finally
         {
@@ -144,6 +159,7 @@ public partial class HomePage : UserControl
     private async void StopProxy()
     {
         StartButton.IsEnabled = false;
+        _intentionalStop = true;
 
         // 清代理 + 终止进程都会阻塞（Stop 内含 WaitForExit 3 秒），统一丢到线程池
         var result = await Task.Run(() =>
@@ -165,6 +181,8 @@ public partial class HomePage : UserControl
         _running = false;
         UpdateStoppedUI();
         StartButton.IsEnabled = true;
+        App.Tray?.SetStatus(isRunning: false, proxyText: "代理未启动");
+        _intentionalStop = false;
     }
 
     private void OnProxyLog(string line)
@@ -176,7 +194,7 @@ public partial class HomePage : UserControl
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (_running)
+            if (_running && !_intentionalStop)
             {
                 AppendLog($"[警告] 代理服务意外退出，退出码: {exitCode}");
                 StopProxy();

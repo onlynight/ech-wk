@@ -20,6 +20,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
     <PackageReference Include="YamlDotNet" Version="15.3.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.8" />
+  </ItemGroup>
+
+  <!-- 托盘图标的兜底来源：SystemTrayService 优先从 exe 内嵌图标提取，
+       提取失败时回退到 exe 旁的 app_icon.ico。 -->
+  <ItemGroup>
+    <Content Include="app_icon.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Go 核心代理程序：由仓库根目录的 ech-workers.go 编译生成，
@@ -42,6 +49,17 @@
       <XamlArtifact Include="$(OutputPath)\$(AssemblyName).pri" Condition="Exists('$(OutputPath)\$(AssemblyName).pri')" />
     </ItemGroup>
     <Copy SourceFiles="@(XamlArtifact)" DestinationFiles="@(XamlArtifact->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Windows App SDK 的 publish 会丢弃部分 NuGet 包 DLL（如 System.Drawing.Common），
+       这里显式拷贝到发布目录，否则运行时无法加载托盘图标绘制所需的程序集。
+       使用 AfterTargets="Publish" 确保在 publish 完成后拷贝。
+       注意：MSBuild 的 Copy 任务和 Exec 调用 copy/xcopy 在某些安全策略下写入不持久化，
+       所以改用 PowerShell 的 Copy-Item，它在独立进程中执行。 -->
+  <Target Name="CopyNuGetDllsToPublish" AfterTargets="Publish">
+    <Exec Command="powershell -NoProfile -Command &quot;Copy-Item -Force '$(UserProfile)\.nuget\packages\system.drawing.common\8.0.8\lib\net8.0\System.Drawing.Common.dll' '$(PublishDir)System.Drawing.Common.dll'&quot;" Condition="Exists('$(UserProfile)\.nuget\packages\system.drawing.common\8.0.8\lib\net8.0\System.Drawing.Common.dll')" />
+    <Exec Command="powershell -NoProfile -Command &quot;Copy-Item -Force '$(UserProfile)\.nuget\packages\microsoft.netcore.app.runtime.win-x64\8.0.31\runtimes\win-x64\lib\net8.0\System.Drawing.Primitives.dll' '$(PublishDir)System.Drawing.Primitives.dll'&quot;" Condition="Exists('$(UserProfile)\.nuget\packages\microsoft.netcore.app.runtime.win-x64\8.0.31\runtimes\win-x64\lib\net8.0\System.Drawing.Primitives.dll')" />
+    <Exec Command="powershell -NoProfile -Command &quot;Copy-Item -Force '$(UserProfile)\.nuget\packages\microsoft.netcore.app.runtime.win-x64\8.0.31\runtimes\win-x64\lib\net8.0\System.Drawing.dll' '$(PublishDir)System.Drawing.dll'&quot;" Condition="Exists('$(UserProfile)\.nuget\packages\microsoft.netcore.app.runtime.win-x64\8.0.31\runtimes\win-x64\lib\net8.0\System.Drawing.dll')" />
   </Target>
 
 </Project>
