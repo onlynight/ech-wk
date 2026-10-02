@@ -48,12 +48,39 @@ public sealed class ProxyProcessService
         _ => "bypass_cn",
     };
 
-    public Task<bool> Start(ServerProfile profile)
+    /// <summary>
+    /// 兜底：清理后台残留的 ech-workers 进程（如上次异常退出未清理、或手动启动的实例），
+    /// 避免监听端口被占用导致新实例启动失败。返回清理掉的进程数。
+    /// </summary>
+    private static int KillOrphanProcesses()
+    {
+        var killed = 0;
+        try
+        {
+            foreach (var p in Process.GetProcessesByName("ech-workers"))
+            {
+                try
+                {
+                    p.Kill(entireProcessTree: true);
+                    killed++;
+                }
+                catch { /* 已退出或无权限，忽略 */ }
+                finally
+                {
+                    p.Dispose();
+                }
+            }
+        }
+        catch { }
+        return killed;
+    }
+
+    public async Task<bool> Start(ServerProfile profile)
     {
         if (IsRunning)
         {
             LogReceived?.Invoke("[错误] 代理服务已在运行。");
-            return Task.FromResult(false);
+            return false;
         }
 
         var binary = FindBinary();
@@ -61,7 +88,16 @@ public sealed class ProxyProcessService
         {
             LogReceived?.Invoke($"[错误] 未找到代理程序: {binary}");
             LogReceived?.Invoke("[错误] 请将 ech-workers.exe 放置在应用程序目录中。");
-            return Task.FromResult(false);
+            return false;
+        }
+
+        // 兜底：启动前清掉后台残留的 ech-workers，再拉起新实例
+        var cleaned = KillOrphanProcesses();
+        if (cleaned > 0)
+        {
+            LogReceived?.Invoke($"[启动] 检测到 {cleaned} 个后台残留的代理进程，已先停止。");
+            // 稍等端口释放
+            await Task.Delay(300);
         }
 
         _cts = new CancellationTokenSource();
@@ -133,7 +169,7 @@ public sealed class ProxyProcessService
         catch (Exception ex)
         {
             LogReceived?.Invoke($"[错误] 启动代理失败: {ex.Message}");
-            return Task.FromResult(false);
+            return false;
         }
 
         _process.BeginOutputReadLine();
@@ -147,7 +183,7 @@ public sealed class ProxyProcessService
             await _process.WaitForExitAsync(_cts.Token);
         }, _cts.Token);
 
-        return Task.FromResult(true);
+        return true;
     }
 
     public void Stop()

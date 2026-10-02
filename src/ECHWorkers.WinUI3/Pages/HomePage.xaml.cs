@@ -209,6 +209,9 @@ public partial class HomePage : UserControl
         StatusDot.Fill = new SolidColorBrush(Color.FromArgb(0xFF, 0x22, 0xC5, 0x5E));
         StatusText.Text = "运行中";
         ListenText.Text = $"127.0.0.1:{port}";
+        // 运行中锁定配置：进程已按启动时的配置拉起，此时改动不会生效
+        ServerCombo.IsEnabled = false;
+        RoutingCombo.IsEnabled = false;
     }
 
     private void UpdateStoppedUI()
@@ -217,6 +220,8 @@ public partial class HomePage : UserControl
         StartGlyph.Glyph = "\uE768"; // Segoe Fluent Icons: 播放
         StatusDot.Fill = new SolidColorBrush(Color.FromArgb(0xFF, 0xEF, 0x44, 0x44));
         StatusText.Text = "已停止";
+        ServerCombo.IsEnabled = true;
+        RoutingCombo.IsEnabled = true;
     }
 
     private void AppendLog(string message)
