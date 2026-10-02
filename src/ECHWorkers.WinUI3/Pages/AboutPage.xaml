@@ -40,7 +40,7 @@
                             <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                                 <TextBlock Text="客户端版本" FontSize="12"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock x:Name="ClientVersion" Text="v0.2.2" FontSize="17"
+                                <TextBlock x:Name="ClientVersion" Text="v0.2.3" FontSize="17"
                                            FontWeight="SemiBold"
                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>

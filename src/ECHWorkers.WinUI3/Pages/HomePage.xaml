@@ -1,7 +1,8 @@
 <UserControl
     x:Class="ECHWorkers.WinUI3.Pages.HomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:ECHWorkers.WinUI3.Models">
         <Grid Padding="28,52,28,24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -92,14 +93,37 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </Grid>
 
+                <!-- 虚拟化日志列表：只实例化可见区域，配合有界集合与批量刷新，
+                     渲染成本与日志总量、产生速率解耦 -->
                 <Border Grid.Row="1" CornerRadius="10" Padding="12"
                         Background="{ThemeResource ControlFillColorTertiaryBrush}">
-                    <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled" Padding="0">
-                        <TextBlock x:Name="LogText" TextWrapping="Wrap"
-                                   FontSize="16"
-                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                    </ScrollViewer>
+                    <ListView x:Name="LogList" Loaded="LogList_Loaded"
+                              SelectionMode="None" IsSwipeEnabled="False"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <!-- 关闭条目过渡动画：高频追加时动画本身开销显著 -->
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection/>
+                        </ListView.ItemContainerTransitions>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="Padding" Value="0,1"/>
+                                <Setter Property="MinHeight" Value="0"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="IsTabStop" Value="False"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:LogEntry">
+                                <TextBlock Text="{x:Bind Display}"
+                                           Foreground="{x:Bind Brush}"
+                                           TextWrapping="Wrap" FontSize="12"
+                                           FontFamily="Consolas"
+                                           IsTextScaleFactorEnabled="False"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </Border>
             </Grid>
         </Border>

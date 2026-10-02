@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using ECHWorkers.WinUI3.Models;
 using ECHWorkers.WinUI3.Services;
 using Microsoft.UI.Xaml;
@@ -10,10 +12,23 @@ namespace ECHWorkers.WinUI3.Pages;
 
 public partial class HomePage : UserControl
 {
+    // 日志 UI 只保留最近 MaxLogEntries 条，超出后从最旧一端淘汰
+    private const int MaxLogEntries = 2000;
+    private static readonly TimeSpan LogFlushInterval = TimeSpan.FromMilliseconds(150);
+
     private bool _running;
     private bool _intentionalStop;
     private ServerProfile? _selectedServer;
     private readonly ProxyProcessService _proxyService = new();
+
+    // 日志走"后台排队 + 定时批量上屏"：进程输出逐行回调只入队（无 UI 开销），
+    // UI 线程每个周期一次性提交一批，布局次数与日志产生速率解耦。
+    private readonly ConcurrentQueue<LogEntry> _pendingLogs = new();
+    private readonly ObservableCollection<LogEntry> _logs = new();
+    private readonly DispatcherTimer _logFlushTimer;
+    // ListView 内部的 ScrollViewer（不公开，Loaded 后从可视化树取得），
+    // 用于测量与控制"跟随底部"滚动。
+    private ScrollViewer? _logScroll;
 
     public HomePage()
     {
@@ -22,6 +37,12 @@ public partial class HomePage : UserControl
         _proxyService.Exited += OnProxyExited;
         // 挂到 App 静态引用，供应用退出兜底（托盘退出/关闭退出）停止代理进程
         App.Proxy = _proxyService;
+
+        LogList.ItemsSource = _logs;
+        _logFlushTimer = new DispatcherTimer { Interval = LogFlushInterval };
+        _logFlushTimer.Tick += (_, _) => FlushPendingLogs();
+        _logFlushTimer.Start();
+
         RefreshServerList();
     }
 
@@ -189,7 +210,8 @@ public partial class HomePage : UserControl
 
     private void OnProxyLog(string line)
     {
-        DispatcherQueue.TryEnqueue(() => AppendLog(line));
+        // 后台线程回调：只做纯数据入队，不触碰任何 UI 对象
+        _pendingLogs.Enqueue(LogEntry.Create(line));
     }
 
     private void OnProxyExited(int exitCode)
@@ -226,13 +248,78 @@ public partial class HomePage : UserControl
         RoutingCombo.IsEnabled = true;
     }
 
+    /// <summary>状态类日志入口（启动/停止/错误提示），同样入队合流。</summary>
     private void AppendLog(string message)
     {
-        var line = $"[{DateTime.Now:HH:mm:ss}] {message}\n";
-        LogText.Text = string.IsNullOrEmpty(LogText.Text) ? line : LogText.Text + line;
+        _pendingLogs.Enqueue(LogEntry.Create(message));
+    }
 
-        // 第三个参数是缩放比例：传 0 会把日志文字缩小，传 null 才表示不改变缩放
-        LogScroll.ChangeView(0, double.MaxValue, null);
+    /// <summary>每个刷新周期把积压日志一次性批量上屏。</summary>
+    private void FlushPendingLogs()
+    {
+        if (_pendingLogs.IsEmpty) return;
+
+        // 先测量是否跟随底部，再添加条目：两条刷新之间只有用户会滚动，
+        // 添加条目会让 ScrollableHeight 变化，添加后测量会误判。
+        var pinned = IsLogAtBottom();
+
+        // 单次突发远超展示上限时，先丢弃最旧的积压（反正 UI 只保留最近 MaxLogEntries 条）
+        while (_pendingLogs.Count > MaxLogEntries)
+        {
+            _pendingLogs.TryDequeue(out _);
+        }
+
+        while (_pendingLogs.TryDequeue(out var entry))
+        {
+            _logs.Add(entry);
+        }
+
+        // 超出上限从最旧一端淘汰，内存与布局成本保持恒定
+        var excess = _logs.Count - MaxLogEntries;
+        for (var i = 0; i < excess; i++)
+        {
+            _logs.RemoveAt(0);
+        }
+
+        if (pinned)
+        {
+            ScrollLogToBottom();
+        }
+    }
+
+    private bool IsLogAtBottom()
+    {
+        return _logScroll == null
+            || _logScroll.ScrollableHeight <= 0
+            || _logScroll.VerticalOffset >= _logScroll.ScrollableHeight - 32;
+    }
+
+    private void ScrollLogToBottom()
+    {
+        if (_logScroll == null) return;
+        // 页面不在可视化树中（正看其他页）时无需滚动
+        if (VisualTreeHelper.GetParent(LogList) == null) return;
+        // 先强制完成一次布局，拿到包含新条目的完整滚动范围
+        LogList.UpdateLayout();
+        _logScroll.ChangeView(null, _logScroll.ScrollableHeight, null, disableAnimation: true);
+    }
+
+    private void LogList_Loaded(object sender, RoutedEventArgs e)
+    {
+        _logScroll = FindDescendant<ScrollViewer>(LogList);
+    }
+
+    private static T? FindDescendant<T>(DependencyObject root) where T : DependencyObject
+    {
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T found) return found;
+            var nested = FindDescendant<T>(child);
+            if (nested != null) return nested;
+        }
+        return null;
     }
 
     private void PrimaryBtn_PointerEntered(object sender, PointerRoutedEventArgs e)
