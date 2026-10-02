@@ -20,6 +20,8 @@ public partial class HomePage : UserControl
         InitializeComponent();
         _proxyService.LogReceived += OnProxyLog;
         _proxyService.Exited += OnProxyExited;
+        // 挂到 App 静态引用，供应用退出兜底（托盘退出/关闭退出）停止代理进程
+        App.Proxy = _proxyService;
         RefreshServerList();
     }
 
