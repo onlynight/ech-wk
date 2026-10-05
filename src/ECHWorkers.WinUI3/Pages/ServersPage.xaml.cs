@@ -18,6 +18,9 @@ public partial class ServersPage : UserControl
 
     private void RefreshList()
     {
+        // 页面随导航重建、列表重新绑定，必须按全局运行态重新同步每个节点的 IsRunning，
+        // 否则运行中的卡片会显示为可编辑。
+        ServerStore.SyncRunning();
         ServerList.ItemsSource = ServerStore.Servers;
         EmptyHint.Visibility = ServerStore.Servers.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         SelectAllCheckBox.IsChecked = false;
@@ -35,23 +38,34 @@ public partial class ServersPage : UserControl
 
     private void EditButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.Tag is ServerProfile profile) OpenEditor(profile);
+        if (sender is FrameworkElement fe && fe.Tag is ServerProfile profile)
+        {
+            // 运行中的节点配置已随进程启动，卡片按钮由模板触发器禁用，这里做兜底
+            if (profile.IsRunning) return;
+            OpenEditor(profile);
+        }
     }
 
     private void ItemDeleteButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement fe && fe.Tag is ServerProfile profile)
         {
-            ServerStore.Servers.Remove(profile);
-            ServerConfigService.Save();
-            RefreshList();
+            RemoveProfile(profile);
         }
     }
 
     private void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
         var selected = ServerStore.Servers.Where(s => s.IsSelected).ToList();
-        foreach (var s in selected) ServerStore.Servers.Remove(s);
+        foreach (var s in selected) RemoveProfile(s);
+        RefreshList();
+    }
+
+    /// <summary>移除节点；运行中禁止删除（进程仍在跑，删了会留孤儿配置引用）。</summary>
+    private void RemoveProfile(ServerProfile profile)
+    {
+        if (profile.IsRunning) return;
+        ServerStore.Servers.Remove(profile);
         ServerConfigService.Save();
         RefreshList();
     }

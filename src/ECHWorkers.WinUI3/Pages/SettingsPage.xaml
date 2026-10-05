@@ -1,0 +1,106 @@
+<UserControl
+    x:Class="ECHWorkers.WinUI3.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+    <Grid Padding="28,52,28,24">
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled" Padding="0">
+            <StackPanel Spacing="18" MaxWidth="620" HorizontalAlignment="Center">
+
+                <!-- 标题 -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,8,0,20" Spacing="10">
+                    <FontIcon Glyph="&#xE713;" FontSize="32" FontFamily="Segoe Fluent Icons"
+                              HorizontalAlignment="Center"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="设置" FontSize="24" FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="管理应用的启动行为与退出方式"
+                               FontSize="13" HorizontalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <!-- 设置卡片 -->
+                <Border Style="{StaticResource CardBorder}" Padding="0">
+                    <StackPanel>
+
+                    <!-- 开机自启动 -->
+                    <Grid Padding="20,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10"
+                                Margin="0,0,16,0"
+                                Background="{ThemeResource ControlFillColorTertiaryBrush}">
+                            <FontIcon Glyph="&#xE774;" FontSize="16" FontFamily="Segoe Fluent Icons"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                            <TextBlock Text="开机自启动" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="登录 Windows 后自动启动 ECH Workers"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <controls:ToggleSwitch Grid.Column="2" x:Name="StartOnLoginToggle"
+                                               IsOn="False"
+                                               OnContent="开" OffContent="关"
+                                               VerticalAlignment="Center"
+                                               Toggled="StartOnLoginToggle_Toggled"/>
+                    </Grid>
+
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
+
+                    <!-- 关闭后保留托盘 -->
+                    <Grid Padding="20,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10"
+                                Margin="0,0,16,0"
+                                Background="{ThemeResource ControlFillColorTertiaryBrush}">
+                            <FontIcon Glyph="&#xE891;" FontSize="16" FontFamily="Segoe Fluent Icons"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                            <TextBlock Text="关闭时最小化到托盘" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                <Run>点击窗口关闭按钮时，程序退到系统托盘继续运行；关闭后需通过托盘菜单</Run><Run FontWeight="SemiBold">"退出"</Run><Run>才能完全退出</Run>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <controls:ToggleSwitch Grid.Column="2" x:Name="MinimizeToTrayToggle"
+                                               IsOn="True"
+                                               OnContent="开" OffContent="关"
+                                               VerticalAlignment="Center"
+                                               Toggled="MinimizeToTrayToggle_Toggled"/>
+                    </Grid>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- 说明 -->
+                <TextBlock TextWrapping="Wrap" FontSize="12.5" TextAlignment="Center"
+                           HorizontalAlignment="Center" LineHeight="20" Margin="0,8,0,0"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                    设置将自动保存，下次启动时自动生效。
+                </TextBlock>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

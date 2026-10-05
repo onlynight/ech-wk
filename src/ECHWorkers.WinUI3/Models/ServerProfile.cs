@@ -17,9 +17,16 @@ public class ServerProfile : INotifyPropertyChanged
     private string _ech = "cloudflare-ech.com";
     private string _routing = "bypass_cn";
     private bool _isSelected = false;
+    private bool _isRunning = false;
 
     /// <summary>列表勾选状态，仅用于 UI 批量选择，不参与持久化。</summary>
     public bool IsSelected { get => _isSelected; set => Set(ref _isSelected, value, nameof(IsSelected)); }
+
+    /// <summary>
+    /// 该节点是否正在运行代理。运行中配置不可编辑（进程已按启动时的配置拉起）。
+    /// 由 ServerStore.SetRunning/ClearRunning 同步，并通知 UI 刷新卡片状态。
+    /// </summary>
+    public bool IsRunning { get => _isRunning; set => Set(ref _isRunning, value, nameof(IsRunning)); }
 
     public string Id { get => _id; set => Set(ref _id, value, nameof(Id)); }
     public string Name { get => _name; set => Set(ref _name, value, nameof(Name)); }

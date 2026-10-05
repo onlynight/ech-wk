@@ -2,13 +2,19 @@
     x:Class="ECHWorkers.WinUI3.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:application="using:Microsoft.UI.Xaml">
+    xmlns:application="using:Microsoft.UI.Xaml"
+    xmlns:converters="using:ECHWorkers.WinUI3.Converters">
     <application:Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls"/>
                 <ResourceDictionary Source="Themes/ThemeStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- 布尔值转换器：单一实例，按 ConverterParameter 区分 invert / dim / 可见性 -->
+            <converters:BoolConverter x:Key="RunningToDimConverter"/>
+            <converters:BoolConverter x:Key="BoolToNotEnabledConverter"/>
+            <converters:BoolConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
     </application:Application.Resources>
 </application:Application>

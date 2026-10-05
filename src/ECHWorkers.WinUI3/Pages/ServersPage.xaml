@@ -5,9 +5,12 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
     <UserControl.Resources>
-        <!-- 单个服务器列表项 -->
+        <!-- 单个服务器列表项。运行中的节点整体置灰并禁用操作，
+             因为进程已按启动时的配置拉起，此时编辑不会生效。
+             可见性/禁用态直接绑定 IsRunning（WinUI 3 的 DataTemplate 不支持 Triggers）。 -->
         <DataTemplate x:Key="ServerItemTemplate">
             <Grid Margin="6,3" Padding="12,10" CornerRadius="10"
+                  Opacity="{Binding IsRunning, Converter={StaticResource RunningToDimConverter}, ConverterParameter=dim}"
                   Background="{ThemeResource ControlFillColorSecondaryBrush}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -17,11 +20,20 @@
                 </Grid.ColumnDefinitions>
 
                 <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"
-                          IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                          IsEnabled="{Binding IsRunning, Converter={StaticResource BoolToNotEnabledConverter}, ConverterParameter=invert}"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="5">
-                    <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        <!-- 运行中标记 -->
+                        <Border CornerRadius="6" Padding="8,3"
+                                Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Background="{ThemeResource ControlFillColorTertiaryBrush}">
+                            <TextBlock Text="运行中" FontSize="11"/>
+                        </Border>
+                    </StackPanel>
                     <TextBlock Text="{Binding Server}" FontSize="12" FontFamily="Consolas"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
@@ -38,10 +50,12 @@
 
                 <Button Grid.Column="2" Content="编辑" Style="{StaticResource SecondaryActionButton}"
                         Padding="14,6" Margin="0,0,8,0" FontSize="12.5"
-                        Click="EditButton_Click" Tag="{Binding}"/>
+                        Click="EditButton_Click" Tag="{Binding}"
+                        IsEnabled="{Binding IsRunning, Converter={StaticResource BoolToNotEnabledConverter}, ConverterParameter=invert}"/>
                 <Button Grid.Column="3" Style="{StaticResource GhostIconButton}"
                         FontFamily="Segoe Fluent Icons" FontSize="14" Content="&#xE74D;"
-                        Click="ItemDeleteButton_Click" Tag="{Binding}"/>
+                        Click="ItemDeleteButton_Click" Tag="{Binding}"
+                        IsEnabled="{Binding IsRunning, Converter={StaticResource BoolToNotEnabledConverter}, ConverterParameter=invert}"/>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
